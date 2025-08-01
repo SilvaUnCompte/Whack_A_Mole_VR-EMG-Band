@@ -1,4 +1,4 @@
-﻿name: Format Scripts
+name: Format Scripts
 
 on:
   push:
