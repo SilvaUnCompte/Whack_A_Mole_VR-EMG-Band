@@ -18,6 +18,7 @@ It is also possible to fully hide the chaperone by editing the steamvr.vrsetting
 */
 
 
+
 public class ModifiersManager : MonoBehaviour
 {
 
