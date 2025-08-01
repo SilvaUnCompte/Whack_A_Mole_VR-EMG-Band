@@ -3,11 +3,11 @@ name: Format Scripts
 on:
   push:
     branches:
-      - main
+      - master
   pull_request:
     types: [closed]
     branches:
-      - main
+      - master
 
 jobs:
   format:
