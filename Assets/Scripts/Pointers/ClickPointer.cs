@@ -23,6 +23,7 @@ public class ClickPointer : Pointer
     private delegate void Del();
 
 
+
     // Implementation of the behavior of the Pointer on shoot. 
     protected override void PlayShoot(bool correctHit)
     {
