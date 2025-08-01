@@ -20,6 +20,7 @@ public class PatternParser
         return paradigm;
     }
 
+
     private static int moleCount;
 
     public int GetMoleCount()
