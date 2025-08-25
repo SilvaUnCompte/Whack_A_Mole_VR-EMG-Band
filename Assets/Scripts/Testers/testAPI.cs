@@ -8,47 +8,43 @@ public class GestureClient : MonoBehaviour
 {
     [SerializeField] public ThalmicMyo thalmicMyo;
 
-    //List<int[]> emgData = new List<int[]>();
-    List<string> gestureResponses = new List<string>();
+    private int memorySize = 6;
+    private int bufferSize = 50;
+    private string currentGesture = "None";
+    private List<string> gestureResponses = new List<string>();
+    private Queue<string> previousGesture;
 
     void Start()
     {
-        InvokeRepeating(nameof(StartPredictionRequestCoroutine), 0f, 0.05f);
+        previousGesture = new Queue<string>();
+        InvokeRepeating(nameof(StartPredictionRequestCoroutine), 0f, 0.004f);
     }
 
     void StartPredictionRequestCoroutine()
     {
-        //emgData.Add(thalmicMyo._myoEmg);
-        //int emgLength = emgData[0].Length;
-
-        //if (emgData.Count > 10)
-        //{
-        //    float[] averageEmg = new float[emgLength];
-        //    for (int i = 0; i < emgLength; i++)
-        //    {
-        //        averageEmg[i] = (float)emgData.Average(emg => emg[i]);
-        //    }
-
-        //    Debug.Log("Average EMG Data: " + string.Join(", ", averageEmg));
-
-        //    StartCoroutine(SendPredictionRequest(averageEmg));
-
-        //    emgData.Clear(); // Clear the list after sending the request
-        //}
-
-
-        if (gestureResponses.Count > 10)
-        {
-            string t = gestureResponses.GroupBy(i => i)
-                .OrderByDescending(grp => grp.Count())
-                .Select(grp => grp.Key).First();
-
-            Debug.Log(t);
-
-            gestureResponses.Clear(); // Clear the list after logging
-        }
+        if (gestureResponses.Count >= bufferSize) { GestureProcesse(); }
 
         StartCoroutine(SendPredictionRequest(thalmicMyo._myoEmg));
+    }
+
+    private void GestureProcesse()
+    {
+        // Get the most common gesture from the responses
+        string newGesture = gestureResponses.GroupBy(i => i)
+                .OrderByDescending(grp => grp.Count())
+                .Select(grp => grp.Key).First();
+        gestureResponses.Clear();
+
+        // Update the current gesture in memory
+        if (previousGesture.Count >= memorySize) { previousGesture.Dequeue(); }
+        previousGesture.Enqueue(newGesture);
+
+        // If a gesture appears more than half the time in the memory, update the current gesture
+        if (previousGesture.Count(i => i == newGesture) >= memorySize/2) { currentGesture = newGesture; }
+
+        Debug.Log("Queue gestures: " + string.Join(", ", previousGesture));
+        Debug.Log("Current gesture: " + currentGesture);
+
     }
 
     IEnumerator SendPredictionRequest(int[] emgs)
@@ -95,20 +91,11 @@ public class GestureClient : MonoBehaviour
                 }
                 if (result != null)
                 {
-                    //Debug.Log($"Label: {result.label}, Prob: {result.prob}");
-                    //if (result.topk != null)
-                    //{
-                    //    foreach (TopKItem top in result.topk)
-                    //    {
-                    //        Debug.Log($"TopK Label: {top.label}, Prob: {top.prob}");
-                    //    }
-                    //}
                     gestureResponses.Add(result.label);
                 }
             }
         }
     }
-
 
     // Helper classes for JSON parsing
     [System.Serializable]
